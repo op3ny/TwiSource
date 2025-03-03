@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>TwiSource - Posts</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/Features-Cards-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #1a2a3a;
+            color: #ffffff;
+        }
+        .btn-primary {
+            background-color: #4a90e2;
+            border-color: #4a90e2;
+        }
+        .btn-primary:hover {
+            background-color: #357abd;
+            border-color: #357abd;
+        }
+        .card {
+            background: #2a3b4c;
+            border: none;
+            border-radius: 10px;
+        }
+        .card-title {
+            color: #4a90e2;
+        }
+        .card-text {
+            color: #ffffff;
+        }
+        .comment-section {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2a3b4c;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            width: 80%;
+            max-width: 600px;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2>Posts</h2>
+                    <p class="w-lg-50">Veja o que está acontecendo!</p>
+                </div>
+            </div>
+            <div class="row d-flex justify-content-center">
+                <div class="col-md-8">
+                    <button id="createPostButton" class="btn btn-primary mb-4">Criar Post</button>
+                    <div id="postsContainer"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popup para criar posts -->
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="popup">
+        <h4 class="card-title">Novo Post</h4>
+        <form id="postForm">
+            <div class="mb-3">
+                <input class="form-control" type="text" id="postTitle" placeholder="Título" required>
+            </div>
+            <div class="mb-3">
+                <textarea class="form-control" id="postContent" placeholder="Conteúdo" required></textarea>
+            </div>
+            <div class="mb-3">
+                <input class="form-control" type="file" id="postImage" accept="image/*">
+            </div>
+            <div class="mb-3">
+                <button class="btn btn-primary d-block w-100" type="submit">Enviar Post</button>
+            </div>
+        </form>
+        <button class="btn btn-secondary d-block w-100" onclick="closePopup()">Fechar</button>
+    </div>
+
+    <!-- Popup para comentários -->
+    <div class="overlay" id="commentsOverlay"></div>
+    <div class="popup" id="commentsPopup">
+        <h4 class="card-title">Comentários</h4>
+        <div id="commentsContainer" class="comment-section mb-3"></div>
+        <form id="commentForm">
+            <div class="mb-3">
+                <textarea class="form-control" id="commentContent" placeholder="Comentar" required></textarea>
+            </div>
+            <div class="mb-3">
+                <button class="btn btn-primary d-block w-100" type="submit">Enviar Comentário</button>
+            </div>
+        </form>
+        <button class="btn btn-secondary d-block w-100" onclick="closeCommentsPopup()">Fechar</button>
+    </div>
+
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html'; // Redireciona para o login se não estiver logado
+        }
+
+        const ws = new WebSocket(`ws://${window.location.host}`);
+
+        let currentPostId = null; // Armazena o ID do post atual para comentários
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            // Verifica se a mensagem é do tipo 'comment'
+            if (data.type === 'comment' && data.comment) {
+                const comment = data.comment;
+                const commentElement = document.createElement('div');
+                commentElement.className = 'card mb-3';
+                commentElement.innerHTML = `
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">${comment.nickname}</h6>
+                        <p class="card-text">${comment.content}</p>
+                    </div>
+                `;
+
+                // Adiciona o comentário ao pop-up de comentários se estiver aberto
+                const commentsContainer = document.getElementById('commentsContainer');
+                if (commentsContainer) {
+                    commentsContainer.appendChild(commentElement);
+                }
+            }
+        };
+
+        document.getElementById('createPostButton').addEventListener('click', () => {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('popup').style.display = 'block';
+        });
+
+        function closePopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        function openCommentsPopup(postId) {
+            currentPostId = postId; // Define o ID do post atual
+            document.getElementById('commentsOverlay').style.display = 'block';
+            document.getElementById('commentsPopup').style.display = 'block';
+            loadComments(postId); // Carrega os comentários ao abrir o pop-up
+        }
+
+        function closeCommentsPopup() {
+            document.getElementById('commentsOverlay').style.display = 'none';
+            document.getElementById('commentsPopup').style.display = 'none';
+        }
+
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+
+            if (!title || !content) {
+                alert('O título e o conteúdo do post não podem estar vazios ou conter apenas espaços.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            formData.append('image', document.getElementById('postImage').files[0]);
+
+            const response = await fetch('/posts', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                closePopup();
+                loadPosts();
+            }
+        });
+
+        document.getElementById('commentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const content = document.getElementById('commentContent').value.trim();
+
+            if (!content) {
+                alert('O comentário não pode estar vazio ou conter apenas espaços.');
+                return;
+            }
+
+            ws.send(JSON.stringify({
+                type: 'comment', // Adiciona o tipo 'comment'
+                postId: currentPostId,
+                userId: localStorage.getItem('userId'),
+                content
+            }));
+            document.getElementById('commentContent').value = ''; // Limpa o campo de texto
+        });
+
+        async function loadPosts() {
+            const response = await fetch('/posts', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const posts = await response.json();
+            const postsContainer = document.getElementById('postsContainer');
+            postsContainer.innerHTML = '';
+
+            posts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'card mb-4';
+                postElement.id = `post-${post.id}`;
+                postElement.innerHTML = `
+                    <div class="card-body">
+                        <h4 class="card-title">${post.title}</h4>
+                        <p class="card-text">${post.content}</p>
+                        ${post.image ? `<img src="/uploads/${post.image}" class="img-fluid mb-3">` : ''}
+                        <h6 class="card-subtitle mb-2 text-muted">Postado por ${post.nickname}</h6>
+                        <button class="btn btn-primary" onclick="openCommentsPopup(${post.id})">Ver Comentários</button>
+                    </div>
+                `;
+                postsContainer.appendChild(postElement);
+            });
+        }
+
+        async function loadComments(postId) {
+            const response = await fetch(`/posts/${postId}/comments`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const comments = await response.json();
+            const commentsContainer = document.getElementById('commentsContainer');
+            commentsContainer.innerHTML = '';
+
+            comments.forEach(comment => {
+                const commentElement = document.createElement('div');
+                commentElement.className = 'card mb-3';
+                commentElement.innerHTML = `
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">${comment.nickname}</h6>
+                        <p class="card-text">${comment.content}</p>
+                    </div>
+                `;
+                commentsContainer.appendChild(commentElement);
+            });
+        }
+
+        loadPosts();
+    </script>
+</body>
+
+</html>

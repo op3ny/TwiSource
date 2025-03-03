@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>TwiSource - Registro</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/Features-Cards-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #1a2a3a;
+            color: #ffffff;
+        }
+        .btn-primary {
+            background-color: #4a90e2;
+            border-color: #4a90e2;
+        }
+        .btn-primary:hover {
+            background-color: #357abd;
+            border-color: #357abd;
+        }
+        .card {
+            background: #2a3b4c;
+            border: none;
+            border-radius: 10px;
+        }
+        .card-title {
+            color: #4a90e2;
+        }
+        .card-text {
+            color: #ffffff;
+        }
+        .message {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2>Registre-se!</h2>
+                    <p class="w-lg-50">Essa é sua primeira vez aqui, certo? Relaxa que é bem fácil de continuar!</p>
+                </div>
+            </div>
+            <div class="row d-flex justify-content-center">
+                <div class="col-md-6 col-xl-4">
+                    <div class="card mb-5">
+                        <div class="card-body d-flex flex-column align-items-center">
+                            <div class="bs-icon-xl bs-icon-circle bs-icon-primary bs-icon my-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-person">
+                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
+                                </svg>
+                            </div>
+                            <form id="registerForm" class="text-center">
+                                <div class="mb-3"><input class="form-control" type="text" id="nickname" placeholder="Qual será seu nick?" required></div>
+                                <div class="mb-3"></div>
+                                <div class="mb-3"><button class="btn btn-primary d-block w-100" type="submit">Realize o Registro!</button></div>
+                                <div id="message" class="message"></div>
+                                <div id="buttonredirect" class="buttonredirect"></div>
+                            </form>
+                            <a href="login.html">Já tem uma conta? Realize o login!</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nickname = document.getElementById('nickname').value;
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nickname })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('message').innerHTML = `<p class="sucess">Registro realizado com sucesso! Sua chave secreta é: ${data.secretKey}</p>`;
+                    document.getElementById('buttonredirect').innerHTML = `<a href="login.html">Agora que você já tem uma conta, realize o login!</a>`
+                    
+                } else {
+                    document.getElementById('message').innerHTML = `<p class="error">${data.error}</p>`;
+                }
+            } catch (error) {
+                console.error('Erro ao enviar a requisição:', error);
+                document.getElementById('message').innerHTML = '<p class="error">Erro ao conectar com o servidor. Tente novamente.</p>';
+            }	
+        });
+    </script>
+</body>
+
+</html>
