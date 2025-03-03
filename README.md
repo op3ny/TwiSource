@@ -1,7 +1,7 @@
 # TwiSource - Seu "Twitter" Open Source!
 
 ## Tutorial de Uso!
-[Clique aqui](#) para acessar o tutorial de uso!
+[Clique aqui](https://github.com/Hsyst/TwiSource/blob/main/how-to-use.md) para acessar o tutorial de uso!
 
 # TwiSource - Documentação Técnica
 
