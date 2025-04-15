@@ -1,278 +1,486 @@
 <!DOCTYPE html>
-<html data-bs-theme="light" lang="en">
+<html data-bs-theme="dark" lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>TwiSource - Posts</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/Features-Cards-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #1d9bf0;
+            --background: #000000;
+            --card-bg: #16181c;
+            --text: #e7e9ea;
+            --text-secondary: #71767b;
+            --border: #2f3336;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
-            background: #1a2a3a;
-            color: #ffffff;
+            background-color: var(--background);
+            color: var(--text);
         }
+
         .btn-primary {
-            background-color: #4a90e2;
-            border-color: #4a90e2;
+            background-color: var(--primary);
+            border-color: var(--primary);
+            border-radius: 9999px;
         }
-        .btn-primary:hover {
-            background-color: #357abd;
-            border-color: #357abd;
+
+        .post-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 1rem;
+            margin-bottom: 1rem;
         }
-        .card {
-            background: #2a3b4c;
-            border: none;
-            border-radius: 10px;
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
         }
-        .card-title {
-            color: #4a90e2;
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1d9bf0;
+            color: white;
+            font-weight: bold;
         }
-        .card-text {
-            color: #ffffff;
+
+        .post-user {
+            font-weight: 700;
+            margin-bottom: 0;
         }
-        .comment-section {
-            max-height: 300px;
-            overflow-y: auto;
+
+        .post-date {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
+
+        .post-image {
+            width: 100%;
+            border-radius: 16px;
+            margin-bottom: 0.75rem;
+            max-height: 400px;
+            object-fit: cover;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .post-action {
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .post-action:hover {
+            color: var(--primary);
+        }
+
+        .floating-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
         .popup {
-            display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #2a3b4c;
-            padding: 20px;
-            border-radius: 10px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 500px;
             z-index: 1000;
-            width: 80%;
-            max-width: 600px;
+            padding: 1.5rem;
         }
+
         .overlay {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
             z-index: 999;
+        }
+
+        .comment-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .image-preview {
+            margin-top: 1rem;
+            position: relative;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
 
 <body>
-    <section class="position-relative py-4 py-xl-5">
-        <div class="container">
-            <div class="row mb-5">
-                <div class="col-md-8 col-xl-6 text-center mx-auto">
-                    <h2>Posts</h2>
-                    <p class="w-lg-50">Veja o que está acontecendo!</p>
-                </div>
-            </div>
-            <div class="row d-flex justify-content-center">
-                <div class="col-md-8">
-                    <button id="createPostButton" class="btn btn-primary mb-4">Criar Post</button>
-                    <div id="postsContainer"></div>
-                </div>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-feather-alt me-2"></i>TwiSource
+            </a>
+            <button id="createPostButton" class="btn btn-primary ms-auto">
+                <i class="fas fa-feather me-1"></i>Post
+            </button>
+        </div>
+    </nav>
+
+    <div class="container mt-3">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div id="postsContainer"></div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Popup para criar posts -->
-    <div class="overlay" id="overlay"></div>
-    <div class="popup" id="popup">
-        <h4 class="card-title">Novo Post</h4>
+    <!-- Create Post Popup -->
+    <div class="overlay" id="overlay" style="display: none;"></div>
+    <div class="popup" id="popup" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Create Post</h4>
+            <button class="btn btn-sm btn-outline-secondary" onclick="closePopup()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
         <form id="postForm">
             <div class="mb-3">
-                <input class="form-control" type="text" id="postTitle" placeholder="Título" required>
+                <textarea class="form-control" id="postContent" placeholder="What's happening?" rows="4" required></textarea>
             </div>
             <div class="mb-3">
-                <textarea class="form-control" id="postContent" placeholder="Conteúdo" required></textarea>
+                <label for="postImage" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-image me-1"></i>Add Image
+                </label>
+                <input type="file" id="postImage" accept="image/*" style="display: none;">
+                <div id="imagePreviewContainer" class="image-preview" style="display: none;">
+                    <img id="imagePreview" class="post-image" src="#" alt="Preview">
+                    <button type="button" class="remove-image" onclick="removeImage()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
-            <div class="mb-3">
-                <input class="form-control" type="file" id="postImage" accept="image/*">
-            </div>
-            <div class="mb-3">
-                <button class="btn btn-primary d-block w-100" type="submit">Enviar Post</button>
-            </div>
+            <button class="btn btn-primary w-100" type="submit">Post</button>
         </form>
-        <button class="btn btn-secondary d-block w-100" onclick="closePopup()">Fechar</button>
     </div>
 
-    <!-- Popup para comentários -->
-    <div class="overlay" id="commentsOverlay"></div>
-    <div class="popup" id="commentsPopup">
-        <h4 class="card-title">Comentários</h4>
-        <div id="commentsContainer" class="comment-section mb-3"></div>
+    <!-- Comments Popup -->
+    <div class="overlay" id="commentsOverlay" style="display: none;"></div>
+    <div class="popup" id="commentsPopup" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Comments</h4>
+            <button class="btn btn-sm btn-outline-secondary" onclick="closeCommentsPopup()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="commentsContainer" class="mb-3"></div>
         <form id="commentForm">
-            <div class="mb-3">
-                <textarea class="form-control" id="commentContent" placeholder="Comentar" required></textarea>
-            </div>
-            <div class="mb-3">
-                <button class="btn btn-primary d-block w-100" type="submit">Enviar Comentário</button>
+            <div class="input-group mb-3">
+                <textarea class="form-control" id="commentContent" placeholder="Write a comment..." required></textarea>
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </form>
-        <button class="btn btn-secondary d-block w-100" onclick="closeCommentsPopup()">Fechar</button>
     </div>
 
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Authentication check
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = 'login.html'; // Redireciona para o login se não estiver logado
+            window.location.href = 'login.html';
         }
 
-        const ws = new WebSocket(`ws://${window.location.host}`);
+        // DOM elements
+        const postsContainer = document.getElementById('postsContainer');
+        const overlay = document.getElementById('overlay');
+        const popup = document.getElementById('popup');
+        const commentsOverlay = document.getElementById('commentsOverlay');
+        const commentsPopup = document.getElementById('commentsPopup');
+        const postForm = document.getElementById('postForm');
+        const commentForm = document.getElementById('commentForm');
+        const createPostButton = document.getElementById('createPostButton');
+        const postImage = document.getElementById('postImage');
+        const imagePreview = document.getElementById('imagePreview');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
 
-        let currentPostId = null; // Armazena o ID do post atual para comentários
+        let currentPostId = null;
 
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+        // Event listeners
+        createPostButton.addEventListener('click', openPopup);
 
-            // Verifica se a mensagem é do tipo 'comment'
-            if (data.type === 'comment' && data.comment) {
-                const comment = data.comment;
-                const commentElement = document.createElement('div');
-                commentElement.className = 'card mb-3';
-                commentElement.innerHTML = `
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">${comment.nickname}</h6>
-                        <p class="card-text">${comment.content}</p>
-                    </div>
-                `;
-
-                // Adiciona o comentário ao pop-up de comentários se estiver aberto
-                const commentsContainer = document.getElementById('commentsContainer');
-                if (commentsContainer) {
-                    commentsContainer.appendChild(commentElement);
-                }
+        postImage.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result;
+                    imagePreviewContainer.style.display = 'block';
+                };
+                
+                reader.readAsDataURL(file);
             }
-        };
-
-        document.getElementById('createPostButton').addEventListener('click', () => {
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('popup').style.display = 'block';
         });
 
-        function closePopup() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('popup').style.display = 'none';
-        }
-
-        function openCommentsPopup(postId) {
-            currentPostId = postId; // Define o ID do post atual
-            document.getElementById('commentsOverlay').style.display = 'block';
-            document.getElementById('commentsPopup').style.display = 'block';
-            loadComments(postId); // Carrega os comentários ao abrir o pop-up
-        }
-
-        function closeCommentsPopup() {
-            document.getElementById('commentsOverlay').style.display = 'none';
-            document.getElementById('commentsPopup').style.display = 'none';
-        }
-
-        document.getElementById('postForm').addEventListener('submit', async (e) => {
+        postForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const title = document.getElementById('postTitle').value.trim();
             const content = document.getElementById('postContent').value.trim();
 
-            if (!title || !content) {
-                alert('O título e o conteúdo do post não podem estar vazios ou conter apenas espaços.');
+            if (!content) {
+                alert('Post content cannot be empty');
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('content', content);
-            formData.append('image', document.getElementById('postImage').files[0]);
+            try {
+                const formData = new FormData();
+                formData.append('content', content);
+                if (postImage.files[0]) {
+                    formData.append('image', postImage.files[0]);
+                }
 
-            const response = await fetch('/posts', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
+                const response = await fetch('/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
 
-            if (response.ok) {
-                closePopup();
-                loadPosts();
+                if (response.ok) {
+                    closePopup();
+                    postForm.reset();
+                    imagePreviewContainer.style.display = 'none';
+                    // Reload posts
+                    postsContainer.innerHTML = '';
+                    await loadPosts();
+                } else {
+                    alert('Failed to create post');
+                }
+            } catch (error) {
+                console.error('Error creating post:', error);
+                alert('An error occurred');
             }
         });
 
-        document.getElementById('commentForm').addEventListener('submit', async (e) => {
+        commentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const content = document.getElementById('commentContent').value.trim();
 
-            if (!content) {
-                alert('O comentário não pode estar vazio ou conter apenas espaços.');
+            if (!content || !currentPostId) {
+                alert('Comment cannot be empty');
                 return;
             }
 
-            ws.send(JSON.stringify({
-                type: 'comment', // Adiciona o tipo 'comment'
-                postId: currentPostId,
-                userId: localStorage.getItem('userId'),
-                content
-            }));
-            document.getElementById('commentContent').value = ''; // Limpa o campo de texto
+            try {
+                const response = await fetch(`/posts/${currentPostId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content })
+                });
+
+                if (response.ok) {
+                    const comment = await response.json();
+                    addCommentToUI(comment);
+                    document.getElementById('commentContent').value = '';
+                } else {
+                    alert('Failed to post comment');
+                }
+            } catch (error) {
+                console.error('Error posting comment:', error);
+                alert('An error occurred');
+            }
         });
 
-        async function loadPosts() {
-            const response = await fetch('/posts', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            const posts = await response.json();
-            const postsContainer = document.getElementById('postsContainer');
-            postsContainer.innerHTML = '';
+        // Initial load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadPosts();
+        });
 
-            posts.forEach(post => {
-                const postElement = document.createElement('div');
-                postElement.className = 'card mb-4';
-                postElement.id = `post-${post.id}`;
-                postElement.innerHTML = `
-                    <div class="card-body">
-                        <h4 class="card-title">${post.title}</h4>
-                        <p class="card-text">${post.content}</p>
-                        ${post.image ? `<img src="/uploads/${post.image}" class="img-fluid mb-3">` : ''}
-                        <h6 class="card-subtitle mb-2 text-muted">Postado por ${post.nickname}</h6>
-                        <button class="btn btn-primary" onclick="openCommentsPopup(${post.id})">Ver Comentários</button>
+        // Functions
+        function openPopup() {
+            overlay.style.display = 'block';
+            popup.style.display = 'block';
+        }
+
+        function closePopup() {
+            overlay.style.display = 'none';
+            popup.style.display = 'none';
+        }
+
+        function openCommentsPopup(postId) {
+            currentPostId = postId;
+            commentsOverlay.style.display = 'block';
+            commentsPopup.style.display = 'block';
+            loadComments(postId);
+        }
+
+        function closeCommentsPopup() {
+            commentsOverlay.style.display = 'none';
+            commentsPopup.style.display = 'none';
+        }
+
+        function removeImage() {
+            imagePreviewContainer.style.display = 'none';
+            postImage.value = '';
+        }
+
+        function getAvatarLetter(nickname) {
+            return nickname ? nickname.charAt(0).toUpperCase() : '?';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+        }
+
+        function createPostElement(post) {
+            const postElement = document.createElement('div');
+            postElement.className = 'post-card';
+            postElement.id = `post-${post.id}`;
+            
+            postElement.innerHTML = `
+                <div class="post-header">
+                    <div class="post-avatar">${getAvatarLetter(post.nickname)}</div>
+                    <div>
+                        <h5 class="post-user mb-0">${post.nickname || 'Anonymous'}</h5>
                     </div>
-                `;
-                postsContainer.appendChild(postElement);
-            });
+                </div>
+                <div class="post-content">
+                    ${post.content.replace(/\n/g, '<br>')}
+                </div>
+                ${post.image ? `<img src="/uploads/${post.image}" class="post-image" alt="Post image">` : ''}
+                <div class="post-actions">
+                    <div class="post-action" onclick="openCommentsPopup(${post.id})">
+                        <i class="far fa-comment"></i>
+                    </div>
+                </div>
+            `;
+            
+            return postElement;
+        }
+
+        function addCommentToUI(comment) {
+            const commentElement = document.createElement('div');
+            commentElement.className = 'comment-card';
+            
+            commentElement.innerHTML = `
+                <div class="post-header">
+                    <div class="post-avatar">${getAvatarLetter(comment.nickname)}</div>
+                    <div>
+                        <h5 class="post-user mb-0">${comment.nickname || 'Anonymous'}</h5>
+                    </div>
+                </div>
+                <div class="post-content">
+                    ${comment.content.replace(/\n/g, '<br>')}
+                </div>
+            `;
+            
+            document.getElementById('commentsContainer').appendChild(commentElement);
+        }
+
+        async function loadPosts() {
+            try {
+                const response = await fetch('/posts', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load posts');
+                
+                const posts = await response.json();
+                postsContainer.innerHTML = '';
+                
+                if (posts.length === 0) {
+                    postsContainer.innerHTML = '<div class="text-center py-3 text-muted">No posts yet</div>';
+                } else {
+                    posts.forEach(post => {
+                        const postElement = createPostElement(post);
+                        postsContainer.appendChild(postElement);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                postsContainer.innerHTML = '<div class="alert alert-danger">Failed to load posts</div>';
+            }
         }
 
         async function loadComments(postId) {
-            const response = await fetch(`/posts/${postId}/comments`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            const comments = await response.json();
             const commentsContainer = document.getElementById('commentsContainer');
-            commentsContainer.innerHTML = '';
-
-            comments.forEach(comment => {
-                const commentElement = document.createElement('div');
-                commentElement.className = 'card mb-3';
-                commentElement.innerHTML = `
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">${comment.nickname}</h6>
-                        <p class="card-text">${comment.content}</p>
-                    </div>
-                `;
-                commentsContainer.appendChild(commentElement);
-            });
+            commentsContainer.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+            
+            try {
+                const response = await fetch(`/posts/${postId}/comments`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load comments');
+                
+                const comments = await response.json();
+                commentsContainer.innerHTML = '';
+                
+                if (comments.length === 0) {
+                    commentsContainer.innerHTML = '<div class="text-center py-3 text-muted">No comments yet</div>';
+                } else {
+                    comments.forEach(comment => {
+                        addCommentToUI(comment);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading comments:', error);
+                commentsContainer.innerHTML = '<div class="alert alert-danger">Failed to load comments</div>';
+            }
         }
-
-        loadPosts();
     </script>
 </body>
-
 </html>
