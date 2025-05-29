@@ -90,7 +90,7 @@ Exemplo de resposta:
 Esse projeto, utiliza WebSocket para conseguir tornar o recursos de Comentários uma realidade. Portanto, fica aí o aviso 👍
 
 # Créditos
-Esse projeto foi criado pelo [op3n/op3ny](https://github.com/op3ny).
+Esse projeto foi criado pela [op3n/op3ny](https://github.com/op3ny).
 
 # Licença
 Esse projeto está sob a licença [Unlicense](https://github.com/Hsyst/TwiSource/blob/main/LICENSE)
